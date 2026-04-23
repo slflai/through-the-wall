@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+dist/
+build/
+.through-the-wall/
+assets/icon.iconset/
+
+# Keep ThroughTheWall.spec (it's hand-maintained), ignore generated ones only
+*.spec
+!ThroughTheWall.spec

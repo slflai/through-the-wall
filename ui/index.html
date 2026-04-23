@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <title>Through the Wall</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="titlebar">
+    <div class="brand">Through the Wall</div>
+    <nav class="tabs">
+      <button class="tab active" data-view="save">儲存</button>
+      <button class="tab" data-view="library">圖庫</button>
+      <button class="tab" data-view="guide">教程</button>
+      <button class="tab" data-view="settings">設定</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ SAVE VIEW ============ -->
+    <section class="view view-save active" data-view="save">
+      <div class="url-bar">
+        <input id="url-input" type="text" placeholder="貼上 IG / Pinterest / Twitter / Reels... URL" autofocus />
+        <button id="fetch-btn" class="primary">抓取</button>
+      </div>
+      <div id="fetch-status" class="status hidden"></div>
+
+      <div id="preview-panel" class="hidden">
+        <div class="panel-head">
+          <div class="source-title" id="source-title"></div>
+          <div class="select-tools">
+            <label class="check"><input type="checkbox" id="select-all" checked /> 全選</label>
+            <span class="count" id="item-count"></span>
+          </div>
+        </div>
+        <div id="items" class="items"></div>
+
+        <div class="save-bar">
+          <div class="category-picker">
+            <label>分類</label>
+            <div class="autocomplete">
+              <input id="category-input" type="text" placeholder="例如: reference/fashion（支援巢狀）" autocomplete="off" />
+              <div id="category-suggestions" class="suggestions hidden"></div>
+            </div>
+            <div class="recent-chips" id="recent-chips"></div>
+          </div>
+          <button id="save-btn" class="primary big">儲存</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LIBRARY VIEW ============ -->
+    <section class="view view-library" data-view="library">
+      <div class="library-layout">
+        <aside class="tree-pane">
+          <div class="pane-head-row">
+            <div class="pane-head">分類</div>
+            <button class="icon-btn" id="new-root-folder-btn" title="新增根分類">＋</button>
+          </div>
+          <div id="category-tree" class="tree"></div>
+        </aside>
+        <div class="grid-pane">
+          <div class="breadcrumb" id="breadcrumb"></div>
+          <div id="selection-bar" class="selection-bar hidden">
+            <span class="count-label" id="selection-count"></span>
+            <button id="batch-move-btn">移動到…</button>
+            <button id="batch-delete-btn" class="danger">刪除</button>
+            <button id="batch-clear-btn">取消選取</button>
+          </div>
+          <div id="library-grid" class="grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GUIDE / TUTORIAL VIEW ============ -->
+    <section class="view view-guide" data-view="guide">
+      <div class="guide">
+        <h1>教程 · Through the Wall</h1>
+        <p class="lede">一個幫你從 IG、Pinterest、Twitter 等平台保存圖片、影片、Reels、Stories 的本地 app。</p>
+
+        <section>
+          <h2>快速開始</h2>
+          <ol>
+            <li>在「儲存」分頁貼上任何社群貼文 URL</li>
+            <li>按「抓取」，app 會列出所有可下載的媒體（carousel 會全部列出來）</li>
+            <li>勾選想要的項目、視需要改檔名</li>
+            <li>填分類（例如 <code>reference/fashion</code>，可以巢狀），按「儲存」</li>
+            <li>檔案會存到 <code>~/Desktop/through-the-wall/&lt;分類&gt;/</code></li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>支援的平台</h2>
+          <ul>
+            <li><b>Instagram</b>：公開貼文、carousel、Reels、Stories（你已登入的私密帳號也可以）</li>
+            <li><b>Pinterest</b>：圖片 pin、影片 pin、GIF</li>
+            <li><b>Twitter / X</b>：貼文裡的圖片與影片</li>
+            <li><b>TikTok / YouTube / Vimeo</b>：影片</li>
+            <li>其他幾百個站（底層使用 gallery-dl + yt-dlp）</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Cookie / 登入內容</h2>
+          <p>需要登入才看得到的內容（私密帳號、Stories、限動）會自動從你 Chrome 的登入狀態讀取 cookie。</p>
+          <p>第一次使用 macOS 會跳出「允許存取鑰匙圈」的提示，按允許一次就好。</p>
+        </section>
+
+        <section>
+          <h2>圖庫管理</h2>
+          <ul>
+            <li><b>點一下檔案</b>：在 Finder 顯示</li>
+            <li><b>右鍵檔案</b>：重新命名、移動到其他分類、刪除</li>
+            <li><b>右鍵資料夾</b>：重新命名、移動、刪除、新增子分類</li>
+            <li>左上角 <b>＋</b> 按鈕：新增根分類</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>常見問題</h2>
+          <details>
+            <summary>抓取失敗怎麼辦？</summary>
+            <p>先確認你在 Chrome 裡有登入該平台（尤其是私密內容）。某些 IG 貼文需要頻繁重新登入或平台臨時限流。換個網路/等一下重試通常會好。</p>
+          </details>
+          <details>
+            <summary>影片只有聲音沒畫面？</summary>
+            <p>已在 v0.2 修正；確保 yt-dlp 優先選擇含影像的 format。若仍發生，請回報該 URL。</p>
+          </details>
+          <details>
+            <summary>想改儲存位置？</summary>
+            <p>到「設定」分頁修改。也可以把現有的 <code>~/Desktop/through-the-wall</code> 資料夾直接搬到別處再更新設定即可。</p>
+          </details>
+        </section>
+
+        <section>
+          <h2>開源 / 授權</h2>
+          <p>這個專案打算以 MIT License 開源。核心技術堆疊：</p>
+          <ul>
+            <li><a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a> — 影片下載</li>
+            <li><a href="https://github.com/mikf/gallery-dl" target="_blank">gallery-dl</a> — 圖片 / 圖庫下載</li>
+            <li><a href="https://github.com/r0x0r/pywebview" target="_blank">pywebview</a> — 原生視窗</li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
+    <!-- ============ SETTINGS VIEW ============ -->
+    <section class="view view-settings" data-view="settings">
+      <div class="settings">
+        <h2>設定</h2>
+        <div class="field">
+          <label>儲存位置</label>
+          <div class="path-row">
+            <input id="save-path-input" type="text" />
+            <button id="save-path-btn">套用</button>
+          </div>
+          <div class="hint">預設 <code>~/Desktop/through-the-wall</code>。每個分類會是一個子資料夾。</div>
+        </div>
+        <div class="field">
+          <label>Cookie 來源</label>
+          <div class="hint">自動從你登入的 Chrome 讀取，不需額外設定。macOS 第一次可能會要求授權鑰匙圈。</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Context menu (shared) -->
+  <div id="ctx-menu" class="ctx-menu hidden"></div>
+
+  <!-- Move-to folder picker modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div id="modal-title">移動到…</div>
+        <button class="close-btn" id="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot">
+        <button id="modal-cancel">取消</button>
+        <button id="modal-confirm" class="primary">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
