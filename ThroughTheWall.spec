@@ -81,8 +81,8 @@ if IS_MAC:
         info_plist={
             "CFBundleName": "Through the Wall",
             "CFBundleDisplayName": "Through the Wall",
-            "CFBundleShortVersionString": "0.5",
-            "CFBundleVersion": "0.5",
+            "CFBundleShortVersionString": "0.6",
+            "CFBundleVersion": "0.6",
             "NSHighResolutionCapable": True,
             # No Terminal window — real app
             "LSUIElement": False,
