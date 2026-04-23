@@ -147,26 +147,36 @@ GDL_QUEUE = 6
 def _preview_gdl(url: str, _depth: int = 0, _original: Optional[str] = None) -> dict:
     if _depth > 3:
         return {"items": [], "error": "gallery-dl 遞迴深度過深"}
-    if not Path(GDL_BIN).exists():
-        return {"items": [], "error": f"找不到 gallery-dl（{GDL_BIN}）"}
 
     original_url = _original or url
-    args = [GDL_BIN, "-j", "--cookies-from-browser", "chrome", url]
+
+    # Use gallery-dl's Python API (DataJob) so we work identically whether launched
+    # from source (.venv) or from a PyInstaller-bundled .app (no CLI binary).
     try:
-        proc = subprocess.run(args, capture_output=True, text=True, timeout=90)
-    except subprocess.TimeoutExpired:
-        return {"items": [], "error": "gallery-dl 超時"}
-
-    stdout = proc.stdout.strip()
-    stderr_err = _meaningful_error(proc.stderr)
-
-    if not stdout:
-        return {"items": [], "error": stderr_err or f"gallery-dl exit {proc.returncode}"}
+        import gallery_dl
+        from gallery_dl.job import DataJob
+    except Exception as e:
+        return {"items": [], "error": f"gallery-dl import: {e}"}
 
     try:
-        msgs = json.loads(stdout)
-    except json.JSONDecodeError as e:
-        return {"items": [], "error": f"gallery-dl JSON 解析失敗：{e}"}
+        gallery_dl.config.load()
+        gallery_dl.config.set(("extractor",), "cookies", ("chrome",))
+    except Exception:
+        pass
+
+    try:
+        # DataJob collects messages in-memory without downloading. file=os.devnull
+        # silences the "[info] Extracted N cookies" chatter.
+        job = DataJob(url, file=open(os.devnull, "w"))
+        job.run()
+        msgs = job.data or []
+    except SystemExit:
+        msgs = job.data or [] if "job" in locals() else []
+    except Exception as e:
+        return {"items": [], "error": f"gallery-dl: {e}"}
+
+    if not msgs:
+        return {"items": [], "error": "gallery-dl 沒有回傳資料"}
 
     items: list[dict] = []
     source_title: Optional[str] = None
@@ -175,7 +185,7 @@ def _preview_gdl(url: str, _depth: int = 0, _original: Optional[str] = None) -> 
     delegate_video = any(h in orig_host for h in DELEGATE_VIDEO_HOSTS)
 
     for msg in msgs:
-        if not isinstance(msg, list) or len(msg) < 2:
+        if not isinstance(msg, (list, tuple)) or len(msg) < 2:
             continue
         kind = msg[0]
 
@@ -222,7 +232,7 @@ def _preview_gdl(url: str, _depth: int = 0, _original: Optional[str] = None) -> 
                     source_title = sub["source_title"]
 
     if not items:
-        return {"items": [], "error": stderr_err or "gallery-dl 沒找到可下載項目"}
+        return {"items": [], "error": "gallery-dl 沒找到可下載項目"}
 
     return {"items": items, "source_title": source_title or ""}
 

@@ -7,23 +7,28 @@
 import sys
 from pathlib import Path
 
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+
 IS_MAC = sys.platform == "darwin"
 IS_WIN = sys.platform == "win32"
 
 block_cipher = None
 
+# gallery-dl and yt-dlp load extractor modules dynamically, so every submodule
+# must be declared explicitly — PyInstaller's static analysis won't see them.
+_gdl_hidden = collect_submodules("gallery_dl")
+_yt_hidden = collect_submodules("yt_dlp")
+
 a = Analysis(
     ["app.py"],
     pathex=[],
     binaries=[],
-    datas=[("ui", "ui")],
+    datas=[("ui", "ui")] + collect_data_files("gallery_dl") + collect_data_files("yt_dlp"),
     hiddenimports=[
         "pywebview",
         "webview.platforms.cocoa" if IS_MAC else "webview.platforms.edgechromium",
-        "yt_dlp",
-        "gallery_dl",
         "browser_cookie3",
-    ],
+    ] + _gdl_hidden + _yt_hidden,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
